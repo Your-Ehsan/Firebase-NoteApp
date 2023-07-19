@@ -1,4 +1,18 @@
+import { getAuth, signOut } from "firebase/auth";
+
 function Header() {
+  
+  const Logout = () => {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+      })
+      .catch((error) => {
+        console.log(error);
+        // An error happened.
+      });
+  };
   return (
     <header className="navbar bg-base-100">
       <div className="dropdown">
@@ -46,7 +60,7 @@ function Header() {
               <a>Settings</a>
             </li>
             <li>
-              <a>Logout</a>
+              <a onClick={() => Logout()}>Logout</a>
             </li>
           </ul>
         </div>

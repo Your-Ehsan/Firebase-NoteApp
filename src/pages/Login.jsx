@@ -1,10 +1,8 @@
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, db } from "../firebase/initializeApp";
-import { useNavigate } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 
 function Login() {
-  const navigateTo = useNavigate();
   const SignInGoogle = () => {
     signInWithPopup(auth, new GoogleAuthProvider())
       .then((result) => {
@@ -19,16 +17,19 @@ function Login() {
             photoURL: result.user.photoURL,
           },
           { merge: true }
-        );
-
-        console.log(result);
+        ).then(() => {
+          if (result) {
+            console.log(result);
+            window.location.href = "/";
+            // throw redirect("/");
+          }
+        });
       })
       .catch((error) => {
         console.log(error);
         const credential = GoogleAuthProvider.credentialFromError(error);
         console.log(credential);
-      })
-      .finally(() => navigateTo("/"));
+      });
   };
   return (
     <section className="w-screen h-screen flex justify-center items-center">

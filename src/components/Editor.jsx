@@ -3,10 +3,11 @@ import ReactMde from "react-mde";
 import Showdown from "showdown";
 import "react-mde/lib/styles/css/react-mde-all.css";
 
-function Editor(props) {
-  const [SelectedTab, setSelectedTab] = useState("write");
+// eslint-disable-next-line react/prop-types
+function Editor({ TempNoteText, setTempNoteText }) {
+  const [SelectedTab, setSelectedTab] = useState("write"),
 
-  const converter = new Showdown.Converter({
+   converter = new Showdown.Converter({
     tables: true,
     simplifiedAutoLink: true,
     strikethrough: true,
@@ -18,9 +19,9 @@ function Editor(props) {
     <section className="w-full">
       <ReactMde
         // eslint-disable-next-line react/prop-types
-        value={props.TempNoteText}
+        value={TempNoteText}
         // eslint-disable-next-line react/prop-types
-        onChange={props.setTempNoteText}
+        onChange={setTempNoteText}
         selectedTab={SelectedTab}
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) =>

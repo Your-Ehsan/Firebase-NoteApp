@@ -1,9 +1,9 @@
 import {
+  Navigate,
   Route,
   RouterProvider,
   createBrowserRouter,
   createRoutesFromElements,
-  redirect,
 } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
@@ -11,15 +11,15 @@ import Login from "./pages/Login";
 import { useAuthContext } from "./contexts/AuthContext";
 
 function App() {
-  const { UserData, LoadingUser } = useAuthContext(),
-    ProtectedRoute = () => {
-      if (UserData === null && !LoadingUser) {
-        return redirect("/login");
-      } else {
-        return { UserData, LoadingUser };
+  const { UserData } = useAuthContext(),
+    // eslint-disable-next-line react/prop-types
+    ProtectedRoute = ({ children }) => {
+      if (UserData === null) {
+        return <Navigate to="/login" />;
       }
+      return children;
     };
-  console.log(UserData, LoadingUser);
+
   return (
     <RouterProvider
       router={createBrowserRouter(
@@ -27,9 +27,11 @@ function App() {
           <Route element={<MainLayout />}>
             <Route
               index
-              loader={ProtectedRoute}
-              element={<Home />}
-              errorElement={<h1>ERROR — Something went wrong!</h1>}
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
             />
             <Route path="login" element={<Login />} />
           </Route>

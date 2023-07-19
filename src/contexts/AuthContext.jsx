@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "firebase/auth";
+import {  onAuthStateChanged } from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "../firebase/initializeApp";
 
@@ -8,25 +8,27 @@ const AuthContext = createContext(),
   },
   // eslint-disable-next-line react/prop-types
   AuthContextProvider = ({ children }) => {
-    const [UserData, setUserData] = useState(null),
-      [LoadingUser, setLoadingUser] = useState(true),
-      getUser = () => {
+    const [UserData, setUserData] = useState({}),
+      [LoadingUser, setLoadingUser] = useState(true);
+    //  () => {
+
+    // };
+    // getUser();
+    useEffect(() => {
+      const unsub = () =>
         onAuthStateChanged(auth, (user) => {
-          user && setUserData(user);
+          setUserData(user);
           setLoadingUser(false);
         });
-      };
-
-    useEffect(() => {
-      const unsub = () => getUser();
       return () => unsub();
     }, []);
 
     return (
       <AuthContext.Provider value={{ UserData, LoadingUser }}>
-        {children}
+        {!LoadingUser && children}
       </AuthContext.Provider>
     );
   };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { AuthContextProvider, useAuthContext };

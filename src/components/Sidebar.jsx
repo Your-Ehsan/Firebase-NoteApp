@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-
 function Sidebar({
   deleteNote,
   createNewNote,

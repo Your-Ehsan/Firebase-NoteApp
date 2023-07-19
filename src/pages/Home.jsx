@@ -1,3 +1,5 @@
+import Editor from "../components/Editor";
+import Sidebar from "../components/Sidebar";
 import {
   addDoc,
   collection,
@@ -8,47 +10,39 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../firebase/initializeApp";
-import Editor from "../components/Editor";
-import Sidebar from "../components/Sidebar";
-import { useLoaderData } from "react-router-dom";
+import { useAuthContext } from "../contexts/AuthContext";
 
 function Home() {
-  const [Notes, setNotes] = useState([]),
+  const { UserData } = useAuthContext(),
+    [Notes, setNotes] = useState([]),
     [CurrentNoteId, setCurrentNoteId] = useState(""),
     [Typing, setTyping] = useState(false),
     [TempNoteText, setTempNoteText] = useState(""),
-    { UserData, LoadingUser } = useLoaderData();
+    [LoadingNotes, setLoadingNotes] = useState(true),
+    currentNote = Notes.find((note) => note.id === CurrentNoteId) || Notes[0],
+    UserEmail = UserData.email,
+    sortedNotes = Notes.sort((a, b) => b.updatedAt - a.updatedAt);
 
-  console.log(LoadingUser, UserData);
-
-  const currentNote =
-    Notes.find((note) => note.id === CurrentNoteId) || Notes[0];
-
-  const sortedNotes = Notes.sort((a, b) => b.updatedAt - a.updatedAt);
   useEffect(() => {
     const unsub = onSnapshot(
-      collection(doc(db, "data", UserData.email), "notes"),
+      collection(doc(db, "data", UserEmail), "notes"),
       (snapshot) => {
         const notesArr = snapshot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
         }));
         setNotes(notesArr);
+        setLoadingNotes(false);
       }
     );
-    // const unsub = onSnapshot(collection(db, "data"), (snapshot) => {
-    //   const notesArr = snapshot.docs.map((doc) => ({
-    //     ...doc.data(),
-    //     id: doc.id,
-    //   }));
-    //   setNotes(notesArr);
-    // });
     return () => unsub();
-  }, [UserData.email]);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [UserData]);
+console.log(Typing);
   useEffect(() => {
     !CurrentNoteId && setCurrentNoteId(Notes[0]?.id);
     console.log("notes saving");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Notes]);
 
   useEffect(() => {
@@ -59,25 +53,28 @@ function Home() {
 
   useEffect(() => {
     setTyping(true);
-    const TimeoutId = setTimeout(async () => {
-      TempNoteText !== currentNote.body && (await updateNote(TempNoteText));
+    const TimeoutId = setTimeout(() => {
+      TempNoteText !== currentNote?.body && updateNote(TempNoteText);
     }, 1200);
     return () => {
       clearTimeout(TimeoutId);
       setTyping(false);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [TempNoteText]);
+
   const updateNote = async (text) => {
     await setDoc(
-      doc(db, "notes", CurrentNoteId),
+      doc(collection(doc(db, "data", UserEmail), "notes"), CurrentNoteId),
       { body: text, updatedAt: Date.now() },
       { merge: true }
     );
   };
+
   const createNewNote = async () => {
     // newNoteRef = await addDoc(collection(db, "data",), newNote);
     const newNoteRef = await addDoc(
-      collection(doc(db, "data", UserData.email), "notes"),
+      collection(doc(db, "data", UserEmail), "notes"),
       {
         // object
         body: `# 1st markdown's Title`,
@@ -89,19 +86,23 @@ function Home() {
   };
 
   const deleteNote = async (noteId) => {
-    const docRef = doc(
-      collection(doc(db, "data", UserData.email), "notes"),
-      noteId
-    );
+    const docRef = doc(collection(doc(db, "data", UserEmail), "notes"), noteId);
     await deleteDoc(docRef);
     // setCurrentNoteId(sortedNotes[0].id);
   };
+  // console.log(UserData);
+  // console.log(LoadingUser);
+  console.log(LoadingNotes);
+  if (LoadingNotes) {
+    return <h1>Loading ...</h1>;
+  }
+
   return (
     <section>
-      {Notes.length ? (
+      {Notes.length > 0 ? (
         <div className="drawer lg:drawer-open">
           <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-          <div className="drawer-content flex flex-col items-center justify-center">
+          <div className="drawer-content flex flex-col items-center justify-start">
             {/* Page content here */}
             <Editor
               TempNoteText={TempNoteText}
@@ -128,7 +129,7 @@ function Home() {
           <button onClick={() => createNewNote()}>Create new</button>
         </div>
       )}
-      {Typing && console.log("typing ...")}
+      {/* {Typing && console.log("typing ...")} */}
     </section>
   );
 }
