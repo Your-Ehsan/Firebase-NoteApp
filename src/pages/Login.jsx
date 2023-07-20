@@ -6,7 +6,6 @@ function Login() {
   const SignInGoogle = () => {
     signInWithPopup(auth, new GoogleAuthProvider())
       .then((result) => {
-        // const credential = GoogleAuthProvider.credentialFromResult(result);
 
         setDoc(
           doc(db, "data", result.user.email),
@@ -21,7 +20,6 @@ function Login() {
           if (result) {
             console.log(result);
             window.location.href = "/";
-            // throw redirect("/");
           }
         });
       })

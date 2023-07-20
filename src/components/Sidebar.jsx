@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+import PropTypes from "prop-types";
 function Sidebar({
   deleteNote,
   createNewNote,
@@ -34,5 +34,11 @@ function Sidebar({
     </section>
   );
 }
-
+Sidebar.propTypes = {
+  deleteNote: PropTypes.func.isRequired,
+  createNewNote: PropTypes.func.isRequired,
+  setCurrentNoteId: PropTypes.func.isRequired,
+  currentNote: PropTypes.object.isRequired,
+  sortedNotes: PropTypes.array.isRequired,
+};
 export default Sidebar;

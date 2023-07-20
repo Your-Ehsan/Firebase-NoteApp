@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import {
   Navigate,
   Route,
@@ -12,7 +13,6 @@ import { useAuthContext } from "./contexts/AuthContext";
 
 function App() {
   const { UserData } = useAuthContext(),
-    // eslint-disable-next-line react/prop-types
     ProtectedRoute = ({ children }) => {
       if (UserData === null) {
         return <Navigate to="/login" />;
@@ -20,18 +20,22 @@ function App() {
       return children;
     };
 
+  ProtectedRoute.propTypes = {
+    children: PropTypes.object.isRequired,
+  };
+
   return (
     <RouterProvider
       router={createBrowserRouter(
         createRoutesFromElements(
           <Route element={<MainLayout />}>
             <Route
-              index
               element={
                 <ProtectedRoute>
                   <Home />
                 </ProtectedRoute>
               }
+              index
             />
             <Route path="login" element={<Login />} />
           </Route>
@@ -40,5 +44,4 @@ function App() {
     />
   );
 }
-
 export default App;

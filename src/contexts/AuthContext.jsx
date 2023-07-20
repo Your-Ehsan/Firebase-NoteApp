@@ -1,4 +1,4 @@
-import {  onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "../firebase/initializeApp";
 
@@ -8,16 +8,13 @@ const AuthContext = createContext(),
   },
   // eslint-disable-next-line react/prop-types
   AuthContextProvider = ({ children }) => {
-    const [UserData, setUserData] = useState({}),
+    const [UserData, setUserData] = useState(undefined),
       [LoadingUser, setLoadingUser] = useState(true);
-    //  () => {
 
-    // };
-    // getUser();
     useEffect(() => {
       const unsub = () =>
         onAuthStateChanged(auth, (user) => {
-          setUserData(user);
+          setUserData(user || null);
           setLoadingUser(false);
         });
       return () => unsub();
@@ -25,7 +22,7 @@ const AuthContext = createContext(),
 
     return (
       <AuthContext.Provider value={{ UserData, LoadingUser }}>
-        {!LoadingUser && children}
+        {children}
       </AuthContext.Provider>
     );
   };

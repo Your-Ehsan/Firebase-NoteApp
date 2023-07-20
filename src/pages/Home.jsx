@@ -20,29 +20,32 @@ function Home() {
     [TempNoteText, setTempNoteText] = useState(""),
     [LoadingNotes, setLoadingNotes] = useState(true),
     currentNote = Notes.find((note) => note.id === CurrentNoteId) || Notes[0],
-    UserEmail = UserData.email,
     sortedNotes = Notes.sort((a, b) => b.updatedAt - a.updatedAt);
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(doc(db, "data", UserEmail), "notes"),
-      (snapshot) => {
-        const notesArr = snapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
-        setNotes(notesArr);
-        setLoadingNotes(false);
-      }
-    );
-    return () => unsub();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (UserData !== undefined) {
+      const unsub = onSnapshot(
+        collection(doc(db, "data", UserData.email), "notes"),
+        (snapshot) => {
+          const notesArr = snapshot.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+          }));
+          setNotes(notesArr);
+          setLoadingNotes(false);
+        }
+      );
+      return () => unsub();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [UserData]);
-console.log(Typing);
+
+  console.log(Typing);
+
   useEffect(() => {
     !CurrentNoteId && setCurrentNoteId(Notes[0]?.id);
     console.log("notes saving");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Notes]);
 
   useEffect(() => {
@@ -60,12 +63,12 @@ console.log(Typing);
       clearTimeout(TimeoutId);
       setTyping(false);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [TempNoteText]);
 
   const updateNote = async (text) => {
     await setDoc(
-      doc(collection(doc(db, "data", UserEmail), "notes"), CurrentNoteId),
+      doc(collection(doc(db, "data", UserData.email), "notes"), CurrentNoteId),
       { body: text, updatedAt: Date.now() },
       { merge: true }
     );
@@ -74,9 +77,8 @@ console.log(Typing);
   const createNewNote = async () => {
     // newNoteRef = await addDoc(collection(db, "data",), newNote);
     const newNoteRef = await addDoc(
-      collection(doc(db, "data", UserEmail), "notes"),
+      collection(doc(db, "data", UserData.email), "notes"),
       {
-        // object
         body: `# 1st markdown's Title`,
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -86,14 +88,17 @@ console.log(Typing);
   };
 
   const deleteNote = async (noteId) => {
-    const docRef = doc(collection(doc(db, "data", UserEmail), "notes"), noteId);
+    const docRef = doc(
+      collection(doc(db, "data", UserData.email), "notes"),
+      noteId
+    );
     await deleteDoc(docRef);
     // setCurrentNoteId(sortedNotes[0].id);
   };
   // console.log(UserData);
   // console.log(LoadingUser);
-  console.log(LoadingNotes);
-  if (LoadingNotes) {
+  console.log(UserData);
+  if (UserData === undefined || LoadingNotes ) {
     return <h1>Loading ...</h1>;
   }
 
@@ -103,16 +108,14 @@ console.log(Typing);
         <div className="drawer lg:drawer-open">
           <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content flex flex-col items-center justify-start">
-            {/* Page content here */}
             <Editor
               TempNoteText={TempNoteText}
               setTempNoteText={setTempNoteText}
             />
           </div>
-          <div className="drawer-side">
+          <div className="drawer-side md:h-auto">
             <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-            <div className="menu p-4 w-80 h-full bg-base-200 text-base-content overflow-y-auto">
-              {/* Sidebar content here */}
+            <div className="menu p-4 w-56 md:w-80 h-full bg-base-200 text-base-content overflow-y-auto">
               <Sidebar
                 sortedNotes={sortedNotes}
                 currentNote={currentNote}

@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 
 function MainLayout() {
   return (
-    <main className="h-screen overflow-y-hidden">
+    <main className="h-screen">
       <Header />
       <Outlet />
       <Footer />

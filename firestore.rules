@@ -6,8 +6,5 @@ service cloud.firestore {
    match /{document=**} {
       allow read, write: if true;
     }
-    function isOwner(userId){
-    return request.auth.uid == userId
-    }
   }
 }
