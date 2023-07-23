@@ -20,11 +20,9 @@ function Home() {
     [TempNoteText, setTempNoteText] = useState(""),
     [LoadingNotes, setLoadingNotes] = useState(true),
     currentNote = Notes.find((note) => note.id === CurrentNoteId) || Notes[0],
-    sortedNotes = Notes.sort((a, b) => b.updatedAt - a.updatedAt);
-
-  useEffect(() => {
-    if (UserData !== undefined) {
-      const unsub = onSnapshot(
+    sortedNotes = Notes.sort((a, b) => b.updatedAt - a.updatedAt),
+    GetUser = async () => {
+      await onSnapshot(
         collection(doc(db, "data", UserData.email), "notes"),
         (snapshot) => {
           const notesArr = snapshot.docs.map((doc) => ({
@@ -33,9 +31,14 @@ function Home() {
           }));
           setNotes(notesArr);
           setLoadingNotes(false);
+          console.log("line 34 ...");
         }
       );
-      return () => unsub();
+    };
+
+  useEffect(() => {
+    if (UserData !== undefined && UserData !== null) {
+      return async () => await GetUser();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [UserData]);
@@ -67,11 +70,19 @@ function Home() {
   }, [TempNoteText]);
 
   const updateNote = async (text) => {
-    await setDoc(
-      doc(collection(doc(db, "data", UserData.email), "notes"), CurrentNoteId),
-      { body: text, updatedAt: Date.now() },
-      { merge: true }
-    );
+    if (UserData !== undefined && UserData !== null) {
+      await setDoc(
+        doc(
+          collection(doc(db, "data", UserData.email), "notes"),
+          CurrentNoteId
+        ),
+        { body: text, updatedAt: Date.now() },
+        { merge: true }
+      );
+    }
+    // } else {
+    // return null
+    // }
   };
 
   const createNewNote = async () => {
@@ -98,7 +109,7 @@ function Home() {
   // console.log(UserData);
   // console.log(LoadingUser);
   console.log(UserData);
-  if (UserData === undefined || LoadingNotes ) {
+  if (UserData === undefined || LoadingNotes) {
     return <h1>Loading ...</h1>;
   }
 
